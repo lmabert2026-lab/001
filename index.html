@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>十七 · 健康管理</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #f5f5f0;
+    color: #2c2c2a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  .card {
+    background: #fff;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+  }
+  h1 { font-size: 22px; color: #3C3489; margin-bottom: 6px; }
+  .sub { font-size: 13px; color: #888780; margin-bottom: 24px; }
+  .links { display: flex; flex-direction: column; gap: 12px; }
+  .link {
+    display: block;
+    background: #EEEDFE;
+    border: 0.5px solid #AFA9EC;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: #3C3489;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .link:hover { background: #CECBF6; transform: translateY(-1px); }
+  .link .desc { font-size: 11px; font-weight: 400; color: #5F5E5A; margin-top: 3px; }
+  .footer { font-size: 11px; color: #B4B2A9; margin-top: 24px; }
+  .badge-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .badge {
+    background: #f1efe8;
+    border-radius: 16px;
+    padding: 3px 12px;
+    font-size: 11px;
+    color: #5F5E5A;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>&#128200; 十七 · 健康管理</h1>
+  <p class="sub">基于个人数据的定制方案 · 每日管控</p>
+  <div class="badge-row">
+    <span class="badge">30岁 男</span>
+    <span class="badge">166cm / 70.5kg</span>
+    <span class="badge">BMI 25.6</span>
+  </div>
+
+  <div class="links">
+    <a class="link" href="tracker.html">
+      执行日程表
+      <span class="desc">每日打卡清单 · 周日程 · 数据记录 · 作息进度</span>
+    </a>
+    <a class="link" href="plan.html">
+      计划文档
+      <span class="desc">系统健康管理方案 · 饮食 · 体态 · 作息 · 监测</span>
+    </a>
+  </div>
+
+  <div class="footer">
+    数据保存在浏览器本地(localStorage) · 建议定期导出备份
+  </div>
+</div>
+</body>
+</html>
