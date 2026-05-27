@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>十七 · 系统健康管理计划</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    background: #f5f5f0;
+    color: #2c2c2a;
+    line-height: 1.7;
+    padding: 20px;
+  }
+  .container { max-width: 820px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #3C3489, #534AB7);
+    color: #fff;
+    padding: 40px 36px;
+    border-radius: 16px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: 2px; }
+  .header p { font-size: 14px; opacity: 0.85; }
+  .header .badge-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .header .badge {
+    background: rgba(255,255,255,0.15);
+    border: 0.5px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: #fff;
+  }
+
+  /* Card */
+  .card {
+    background: #fff;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #3C3489;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #EEEDFE;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .icon { font-size: 20px; }
+  .card h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: #534AB7;
+    margin: 16px 0 8px;
+  }
+  .card p, .card li { font-size: 13.5px; color: #444441; }
+  .card ul, .card ol { padding-left: 20px; }
+  .card li { margin-bottom: 6px; }
+
+  /* Metric Row */
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .metric {
+    background: #f1efe8;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .metric .label { font-size: 12px; color: #888780; }
+  .metric .value { font-size: 22px; font-weight: 700; color: #3C3489; }
+  .metric .sub { font-size: 11px; color: #888780; margin-top: 2px; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-green { background: #EAF3DE; color: #3B6D11; }
+  .tag-amber { background: #FAEEDA; color: #854F0B; }
+  .tag-red { background: #FCEBEB; color: #A32D2D; }
+  .tag-purple { background: #EEEDFE; color: #534AB7; }
+  .tag-blue { background: #E6F1FB; color: #185FA5; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: #d3d1c7;
+  }
+  .tl-item { position: relative; margin-bottom: 14px; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #534AB7;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #534AB7;
+  }
+  .tl-item .time { font-size: 12px; color: #888780; font-weight: 500; }
+  .tl-item .content { font-size: 13px; color: #444441; margin-top: 2px; }
+
+  /* Phase bar */
+  .phase-bar {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0;
+  }
+  .phase-step {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    background: #f1efe8;
+    color: #888780;
+    border: 0.5px solid #d3d1c7;
+  }
+  .phase-step.active {
+    background: #EEEDFE;
+    border-color: #534AB7;
+    color: #534AB7;
+    font-weight: 500;
+  }
+  .phase-step.done {
+    background: #EAF3DE;
+    border-color: #97C459;
+    color: #3B6D11;
+  }
+
+  /* Exercise table */
+  .ex-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 10px 0;
+  }
+  .ex-table th {
+    background: #f1efe8;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 500;
+    font-size: 12px;
+    color: #5F5E5A;
+    border-bottom: 0.5px solid #d3d1c7;
+  }
+  .ex-table td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid #f1efe8;
+    vertical-align: top;
+  }
+  .ex-table tr:last-child td { border-bottom: none; }
+
+  /* Divider */
+  .divider { height: 1px; background: #d3d1c7; margin: 20px 0; opacity: 0.5; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #888780;
+    padding: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .header { padding: 28px 20px; }
+    .card { padding: 18px 16px; }
+    .metric-row { grid-template-columns: repeat(2, 1fr); }
+    .phase-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>十七 · 系统健康管理计划</h1>
+    <p>基于个人数据的定制方案 · 作息 &middot; 体态 &middot; 体重 &middot; 专项健康</p>
+    <div class="badge-row">
+      <span class="badge">30岁 · 男</span>
+      <span class="badge">166cm / 70.5kg</span>
+      <span class="badge">BMI 25.6</span>
+      <span class="badge">广州</span>
+      <span class="badge">制定日期: 2026.05.26</span>
+    </div>
+  </div>
+
+  <!-- === 基础数据 === -->
+  <div class="card">
+    <h2><span class="icon">&#9889;</span> 基础数据分析</h2>
+    <div class="metric-row">
+      <div class="metric">
+        <div class="label">当前体重</div>
+        <div class="value">70.5</div>
+        <div class="sub">kg</div>
+      </div>
+      <div class="metric">
+        <div class="label">BMI</div>
+        <div class="value">25.6</div>
+        <div class="sub"><span class="tag tag-amber">超重</span> 中国标准 ≥24</div>
+      </div>
+      <div class="metric">
+        <div class="label">体脂估算</div>
+        <div class="value">~24%</div>
+        <div class="sub">成年男性正常 15-20%</div>
+      </div>
+      <div class="metric">
+        <div class="label">建议体重</div>
+        <div class="value">63-65</div>
+        <div class="sub">kg · 减 5.5-7.5kg</div>
+      </div>
+    </div>
+
+    <p style="margin-top:10px;"><strong>评估摘要：</strong>BMI 25.6 处在中国标准超重区间（24-28），结合熬夜作息（凌晨2点后睡）、加班后偏头痛、高尿酸史及圆肩头前倾体态，<strong>核心矛盾是睡眠不足导致的代谢紊乱 → 体重难控 + 恢复变慢 + 体态问题加重</strong>。方案必须把<strong>作息改善放在第一位</strong>，其余措施才有基础。</p>
+  </div>
+
+  <!-- === 阶段规划 === -->
+  <div class="card">
+    <h2><span class="icon">&#128200;</span> 阶段目标规划</h2>
+    <div class="phase-bar">
+      <div class="phase-step done">第1阶段<br>1-4周</div>
+      <div class="phase-step active">第2阶段<br>5-8周</div>
+      <div class="phase-step">第3阶段<br>9-16周</div>
+      <div class="phase-step">维持期<br>17周+</div>
+    </div>
+
+    <table class="ex-table">
+      <tr><th style="width:24%">阶段</th><th>核心目标</th><th>关键指标</th></tr>
+      <tr>
+        <td><span class="tag tag-purple">P1 启动期</span><br><small>第1-4周</small></td>
+        <td>建立睡眠节律、启动饮食调整、开始体态基础训练</td>
+        <td>入睡时间提前至 00:30 前<br>日均热量缺口 300kcal<br>体重降至 ~69kg</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-blue">P2 攻坚期</span><br><small>第5-8周</small></td>
+        <td>稳定作息、加速减脂、体态矫正系统化</td>
+        <td>入睡时间提前至 23:30 前<br>日均热量缺口 400kcal<br>体重降至 ~67kg</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-green">P3 塑形期</span><br><small>第9-16周</small></td>
+        <td>体态明显改善、耐力提升、体重达标</td>
+        <td>睡眠时间 7h+/天<br>体重降至 63-65kg<br>体态自查改善 >70%</td>
+      </tr>
+      <tr>
+        <td><span class="tag">维持期</span><br><small>17周+</small></td>
+        <td>习惯固化、维持体重、定期监测</td>
+        <td>BMI < 24<br>偏头痛月发 ≤1次<br>尿酸正常</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- === 作息改善 === -->
+  <div class="card">
+    <h2><span class="icon">&#127772;</span> 作息改善方案</h2>
+
+    <h3>现状 vs 目标</h3>
+    <table class="ex-table">
+      <tr><th style="width:20%">项目</th><th style="width:40%">当前</th><th style="width:40%">目标（P3结束时）</th></tr>
+      <tr><td>工作日入睡</td><td>凌晨 2:00+</td><td>23:00-23:30</td></tr>
+      <tr><td>工作日起床</td><td>8:00（~6h）</td><td>6:30-7:00（7-7.5h）</td></tr>
+      <tr><td>周末入睡</td><td>1:00</td><td>23:30-00:00</td></tr>
+      <tr><td>周末起床</td><td>10:00+</td><td>7:30-8:00</td></tr>
+      <tr><td>日均睡眠</td><td>~5.5-6h</td><td>7-7.5h</td></tr>
+    </table>
+
+    <h3>渐进式作息调整表</h3>
+    <table class="ex-table">
+      <tr><th>周次</th><th>入睡目标</th><th>起床目标</th><th>核心策略</th></tr>
+      <tr>
+        <td>第1周</td>
+        <td>1:30前</td>
+        <td>7:30</td>
+        <td>设置21:00闹钟提醒"准备收工"；睡前1h禁屏（手机放客厅）；睡前泡脚15min</td>
+      </tr>
+      <tr>
+        <td>第2周</td>
+        <td>1:00前</td>
+        <td>7:30</td>
+        <td>下班通勤听播客/音乐切换状态；到家后不做高强度脑力工作；写"今日停止"清单</td>
+      </tr>
+      <tr>
+        <td>第3-4周</td>
+        <td>00:30前</td>
+        <td>7:00</td>
+        <td>建立睡前仪式：拉伸10min + 阅读/听书15min；固定7:00闹钟，不设贪睡</td>
+      </tr>
+      <tr>
+        <td>第5-6周</td>
+        <td>00:00前</td>
+        <td>7:00</td>
+        <td>周末提前至8:00起床；午休20min（不超过30min）；晚餐后散步15min</td>
+      </tr>
+      <tr>
+        <td>第7-8周</td>
+        <td>23:30前</td>
+        <td>6:30</td>
+        <td>工作日睡前1h完全断网；培养"早起运动+冷脸"体验（用早起的好处反哺早睡动力）</td>
+      </tr>
+    </table>
+
+    <h3>关键策略</h3>
+    <ol>
+      <li><strong>光照法：</strong>起床后立刻拉开窗帘/开全光谱灯（500lux+），抑制褪黑素。睡前1h用暖光台灯（< 2000K），减少蓝光暴露。</li>
+      <li><strong>固定起床时间：</strong>即使在周末也控制在8:00前起床，用起床时间来锚定入睡时间。</li>
+      <li><strong>下班"解压通道"：</strong>8-9点下班容易带压力回家导致报复性熬夜。方案：下班路上听15min播客→回家洗冷水脸→在家只做放松活动（不碰工作设备）。</li>
+      <li><strong>咖啡截断：</strong>午后13:00后不摄入咖啡因。有偏头痛的话，咖啡因戒断本身可能导致头痛，建议逐步减量而非骤停。</li>
+      <li><strong>卧室改造：</strong>窗帘换成全遮光款；睡前1h室温降至22-24度；使用白噪音APP。</li>
+    </ol>
+
+    <div class="divider"></div>
+
+    <h3>偏头痛专项（加班相关）</h3>
+    <ul>
+      <li><strong>即时缓解：</strong>发作时立刻离开屏幕，去暗处静坐15-20min；用冷毛巾敷额头 + 颈部；深呼吸（4-7-8呼吸法：吸气4秒→屏气7秒→呼气8秒）。</li>
+      <li><strong>预防：</strong>记录"头痛日志"（时间、加班时长、饮食、饮水），找规律；高强度加班时每小时起身2min、看远；补充镁（200-400mg/天）和维生素B2（400mg/天）。</li>
+      <li><strong>如果每周发作 ≥2次 → 建议看神经内科。</strong></li>
+    </ul>
+  </div>
+
+  <!-- === 体重管理 === -->
+  <div class="card">
+    <h2><span class="icon">&#127947;</span> 体重管理 · 饮食方案</h2>
+
+    <h3>热量计算</h3>
+    <div class="metric-row">
+      <div class="metric">
+        <div class="label">基础代谢 BMR</div>
+        <div class="value">~1,600</div>
+        <div class="sub">kcal/天 (Mifflin-St Jeor)</div>
+      </div>
+      <div class="metric">
+        <div class="label">维持热量 TDEE</div>
+        <div class="value">~2,100</div>
+        <div class="sub">kcal/天 (久坐为主)</div>
+      </div>
+      <div class="metric">
+        <div class="label">减脂摄入</div>
+        <div class="value">1,700</div>
+        <div class="sub">kcal/天 · 缺口 ~400</div>
+      </div>
+      <div class="metric">
+        <div class="label">预计减重速度</div>
+        <div class="value">0.4-0.6</div>
+        <div class="sub">kg/周</div>
+      </div>
+    </div>
+
+    <h3>三餐结构建议</h3>
+    <table class="ex-table">
+      <tr><th>餐次</th><th>时间</th><th>内容建议</th><th>热量</th></tr>
+      <tr>
+        <td>早餐</td>
+        <td>7:00-8:00</td>
+        <td>全麦面包/燕麦 + 鸡蛋2个 + 无糖豆浆/牛奶 + 少量水果</td>
+        <td>~400kcal</td>
+      </tr>
+      <tr>
+        <td>午餐</td>
+        <td>12:00-13:00</td>
+        <td>米饭（1拳）+ 瘦肉/鱼肉（1掌）+ 蔬菜（2拳）</td>
+        <td>~550kcal</td>
+      </tr>
+      <tr>
+        <td>加餐</td>
+        <td>16:00-17:00</td>
+        <td>坚果一小把（15g）或 无糖酸奶/蛋白棒</td>
+        <td>~150kcal</td>
+      </tr>
+      <tr>
+        <td>晚餐</td>
+        <td>20:00-21:00</td>
+        <td>杂粮/粗粮(半拳) + 鸡胸/豆腐 + 大量蔬菜；少油少盐</td>
+        <td>~450kcal</td>
+      </tr>
+      <tr>
+        <td>晚上</td>
+        <td>睡前</td>
+        <td>如有饥饿感 → 无糖酸奶/黄瓜/温水</td>
+        <td>~100kcal</td>
+      </tr>
+    </table>
+
+    <h3>高尿酸饮食要点</h3>
+    <ul>
+      <li><strong>严格限制：</strong>动物内脏、浓汤（火锅汤/老火汤/海鲜汤）、酒精（尤其啤酒）、含糖饮料/果汁</li>
+      <li><strong>适量控制：</strong>红肉（牛肉/猪肉）每周3-4次，每次不超100g；海鲜（虾蟹贝类）选择低嘌呤种类</li>
+      <li><strong>鼓励摄入：</strong>每日饮水 2000-2500ml（小口多次）；低脂乳制品（牛奶/酸奶有助于促排尿酸）；深色蔬菜、菌菇类</li>
+      <li><strong>推荐饮品：</strong>淡柠檬水、淡茶水、黑咖啡（不加糖）</li>
+    </ul>
+
+    <h3>咽炎饮食要点</h3>
+    <ul>
+      <li>避免：过烫食物/饮品、辛辣刺激、油炸食品、烟酒</li>
+      <li>多吃：梨、蜂蜜（非急性发作期）、银耳、百合、温润流食</li>
+      <li>建议：办公桌常备温水杯，少量多次喝；使用加湿器保持室内湿度40-60%</li>
+    </ul>
+  </div>
+
+  <!-- === 运动方案 === -->
+  <div class="card">
+    <h2><span class="icon">&#128170;</span> 运动方案</h2>
+
+    <p>考虑到8-9点下班、体能起点较低，运动方案以<strong>短时高效 + 居家可执行</strong>为原则。</p>
+
+    <h3>每周训练框架</h3>
+    <table class="ex-table">
+      <tr><th>类型</th><th>频率</th><th>时长</th><th>说明</th></tr>
+      <tr>
+        <td>体态矫正训练</td>
+        <td>每天 6天/周</td>
+        <td>15min</td>
+        <td>早晚都可，坚持第一</td>
+      </tr>
+      <tr>
+        <td>有氧燃脂</td>
+        <td>3-4次/周</td>
+        <td>20-30min</td>
+        <td>下班后 / 午休（适应后逐步加量）</td>
+      </tr>
+      <tr>
+        <td>HIIT/高强度</td>
+        <td>1-2次/周</td>
+        <td>15-20min</td>
+        <td>周末做，心跳控制 80% 最大心率</td>
+      </tr>
+      <tr>
+        <td>每周步数目标</td>
+        <td>-</td>
+        <td>7,000-10,000步</td>
+        <td>通勤 + 午休散步</td>
+      </tr>
+    </table>
+
+    <h3>体态矫正训练（每天15min）</h3>
+    <p style="font-size:12px; color:#888780; margin-bottom:8px;">针对圆肩头前倾 + 小腿粗壮问题</p>
+    <table class="ex-table">
+      <tr><th style="width:24%">动作</th><th style="width:28%">组次</th><th>要点</th></tr>
+      <tr>
+        <td>1. 靠墙站立</td>
+        <td>3-5min</td>
+        <td>后脑勺+肩膀+臀部+脚后跟贴墙，收下巴，每天3min起步</td>
+      </tr>
+      <tr>
+        <td>2. 胸椎伸展（仰卧）</td>
+        <td>2组×10次</td>
+        <td>双手抱头平躺，用上背部（而非腰部）撑起，打开胸椎活动度</td>
+      </tr>
+      <tr>
+        <td>3. 门框胸肌拉伸</td>
+        <td>左右各30秒×2组</td>
+        <td>双手扶门框两侧，身体前倾，感受胸大肌/胸小肌拉伸</td>
+      </tr>
+      <tr>
+        <td>4. YTWL 肩背激活</td>
+        <td>各8次×2组</td>
+        <td>俯身微屈膝，大拇指朝上，做Y/T/W/L四个方向后缩肩胛</td>
+      </tr>
+      <tr>
+        <td>5. 弹力带划船</td>
+        <td>3组×15次</td>
+        <td>弹力带固定前方，向后拉肘，感受中下斜方肌发力</td>
+      </tr>
+      <tr>
+        <td>6. 小腿拉伸</td>
+        <td>左右各30秒×3组</td>
+        <td>弓步推墙，后腿伸直脚跟踩地；再微屈后膝拉伸比目鱼肌</td>
+      </tr>
+      <tr>
+        <td>7. 足弓训练</td>
+        <td>3组×15次</td>
+        <td>站立提踵 + "抓毛巾"动作，改善小腿代偿</td>
+      </tr>
+    </table>
+
+    <h3>有氧选择（20-30min）</h3>
+    <ul>
+      <li><strong>推荐：</strong>爬楼梯（15-20层×3趟）、跳绳（间歇：1min跳+30s休）、快走+慢跑交替</li>
+      <li><strong>不推荐：</strong>长时间跑步（对小腿粗壮者加重）、高强度跳操（下班后身体疲劳期易受伤）</li>
+      <li><strong>周末可选：</strong>游泳（对圆肩有矫正作用，对膝盖友好）、骑行</li>
+    </ul>
+  </div>
+
+  <!-- === 每日日程 === -->
+  <div class="card">
+    <h2><span class="icon">&#128197;</span> 理想工作日日程表</h2>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="time">7:00 起床</div>
+        <div class="content">拉开窗帘/开灯（光照唤醒）→ 喝温水300ml → 简单拉伸3min</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">7:15-7:35 晨间运动</div>
+        <div class="content">体态矫正15min + 可选：靠墙站立5min</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">7:35-8:00 早餐</div>
+        <div class="content">高蛋白早餐，出门前备好午餐/加餐</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">9:00-12:00 上午工作</div>
+        <div class="content">每小时起身1-2min；桌面摆水杯提醒喝水</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">12:00-13:00 午餐</div>
+        <div class="content">午餐后散步10-15min（帮助消化+日晒合成VD）</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">13:00-14:00 午休</div>
+        <div class="content">闭眼休息/小睡15-20min（不超30min，避免睡眠惯性）</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">16:00-16:15 加餐</div>
+        <div class="content">坚果/酸奶 + 起身走动</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">18:00-20:00 工作收尾</div>
+        <div class="content">如需要加班，每个整点起身2min</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">20:00-21:00 晚餐</div>
+        <div class="content">轻晚餐 + 通勤放松</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">21:00-22:00 "缓冲带"</div>
+        <div class="content">不碰工作设备；泡脚15min/听音乐/阅读/轻度拉伸</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">22:00-22:30 断网准备</div>
+        <div class="content">手机放客厅/开飞行模式；暖光台灯；写下明天3件要事</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">22:30-23:00 入睡准备</div>
+        <div class="content">体态矫正训练（如果早上没做）+ 腹部深呼吸</div>
+      </div>
+      <div class="tl-item">
+        <div class="time">23:00-23:30 入睡</div>
+        <div class="content">目标：23:30前进入睡眠状态</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 专项健康问题 === -->
+  <div class="card">
+    <h2><span class="icon">&#127919;</span> 专项健康问题管理</h2>
+
+    <h3>偏头痛</h3>
+    <ul>
+      <li><strong>记录触发因素：</strong>建立"头痛日志"，记录日期、加班时长、饮食（是否吃外卖/含味精食物）、饮水、睡眠时长。2周后找规律。</li>
+      <li><strong>急性期处理：</strong>安静暗室 + 冷敷额头/太阳穴 + 4-7-8呼吸法</li>
+      <li><strong>预防性补充：</strong>柠檬酸镁 200-400mg/天（睡前服用，也有助睡眠）+ 维生素B2 400mg/天</li>
+      <li><strong>就医指征：</strong>频率 >1次/周、服用止痛药 >10天/月、伴随呕吐/视力异常 → 神经内科就诊</li>
+    </ul>
+
+    <h3>咽炎</h3>
+    <ul>
+      <li><strong>环境：</strong>办公桌加湿器（湿度>40%）；空调房注意保暖颈部（围巾/丝巾）</li>
+      <li><strong>日常护理：</strong>温盐水漱口（早晚各1次）；少量多次温水（每天1.5-2L）</li>
+      <li><strong>饮食：</strong>避免过烫/辛辣/油炸；蜂蜜柠檬水（非急性期）</li>
+      <li><strong>如果持续 >2周不见好转 → 耳鼻喉科</strong></li>
+    </ul>
+
+    <h3>尿酸管理</h3>
+    <ul>
+      <li><strong>饮食：</strong>严格避开动物内脏、浓汤、含糖饮料、啤酒；红肉每周≤3次</li>
+      <li><strong>饮水：</strong>每天2000-2500ml（目标尿量1.5-2L）→ 早晨500ml + 上午500ml + 下午500ml + 傍晚500ml+</li>
+      <li><strong>体重：</strong>减重本身可降低血清尿酸（但避免快速减重导致酮体竞争排泄）</li>
+      <li><strong>监测：</strong>每3个月复查血尿酸，目标 <420μmol/L（建议控制在 <360）</li>
+    </ul>
+  </div>
+
+  <!-- === 监测机制 === -->
+  <div class="card">
+    <h2><span class="icon">&#128202;</span> 监测与反馈机制</h2>
+
+    <h3>每周记录</h3>
+    <table class="ex-table">
+      <tr><th>指标</th><th>频率</th><th>方法</th><th>健康范围</th></tr>
+      <tr><td>体重</td><td>每周1次（周二晨起空腹）</td><td>固定时间、同一秤</td><td>目标每周↓ 0.4-0.6kg</td></tr>
+      <tr><td>睡眠时长</td><td>每日记录</td><td>手环/手机记</td><td>≥7h</td></tr>
+      <tr><td>入睡/起床时间</td><td>每日记录</td><td>手机记录</td><td>23:30前入睡 / 7:00前起床</td></tr>
+      <tr><td>饮水</td><td>每日</td><td>水杯容量×杯数</td><td>≥2000ml</td></tr>
+      <tr><td>步数</td><td>每日</td><td>手机/手环</td><td>≥7000步</td></tr>
+      <tr><td>头痛发作</td><td>每次记录</td><td>头痛日志</td><td>月发≤2次（理想≤1次）</td></tr>
+      <tr><td>血尿酸</td><td>每3月</td><td>医院/体检</td><td><420μmol/L</td></tr>
+    </table>
+
+    <h3>检查节奏</h3>
+    <ul>
+      <li><strong>第1-4周：</strong>每周复盘，调整作息节奏</li>
+      <li><strong>第8周：</strong>复查尿酸、评估减重进展、调整运动方案</li>
+      <li><strong>第16周：</strong>全面评估（尿酸+体态拍照对比+体重）</li>
+      <li><strong>每季度：</strong>体检（重点关注尿酸、肝功能、血脂）</li>
+    </ul>
+
+    <h3>紧急提醒</h3>
+    <ul>
+      <li><span class="tag tag-red">红色</span> 头痛频率突然增加 >2次/周 → 停止自行处理，就医</li>
+      <li><span class="tag tag-amber">黄色</span> 连续2周体重不降 → 检查饮食记录是否准确、睡眠是否恢复</li>
+      <li><span class="tag tag-green">绿色</span> 连续1周入睡时间在23:30前 → 持续强化习惯</li>
+    </ul>
+  </div>
+
+  <!-- === 最后 === -->
+  <div class="card" style="background:#EEEDFE; border-color:#AFA9EC;">
+    <h2 style="color:#3C3489; border-bottom-color:#AFA9EC;"><span class="icon">&#128218;</span> 执行原则</h2>
+    <ol>
+      <li><strong>优先排序：作息 > 饮食 > 体态 > 运动量。</strong>睡不好，后面的努力全部打折。</li>
+      <li><strong>允许弹性，不允许中断。</strong>某天睡晚了没关系，第二天照样7:00起床，不补觉不自责。</li>
+      <li><strong>减重不追求速度。</strong>每周0.4-0.6kg，16周减6-7kg完全可达。</li>
+      <li><strong>体态是慢活。</strong>圆肩头前倾是几年积累的，预期3个月看到明显变化。</li>
+      <li><strong>记录>感觉。</strong>不要"感觉今天状态不好"，看数据说话。</li>
+      <li><strong>身体健康是一切投资的基础。</strong>你对财务数据敏感，对自己的身体数据也要同等对待。</li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    制定日期：2026年5月26日 · 建议每4周复盘调整一次<br>
+    本计划为通用健康管理建议，不替代专业医疗诊断。如有持续不适请及时就医。
+  </div>
+
+</div>
+</body>
+</html>

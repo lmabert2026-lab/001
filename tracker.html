@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>十七 · 健康执行日程表</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #f5f5f0;
+    color: #2c2c2a;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* ---- Header ---- */
+  .header {
+    background: linear-gradient(135deg, #3C3489, #534AB7);
+    color: #fff;
+    padding: 24px 28px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+  .header .sub a { color: #CECBF6; text-decoration: underline; cursor: pointer; }
+
+  /* ---- Edit Guide Modal ---- */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+    z-index: 100; justify-content: center; align-items: center; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 560px; width: 100%;
+    padding: 28px; max-height: 80vh; overflow-y: auto; font-size: 13px;
+  }
+  .modal-box h2 { font-size: 16px; font-weight: 600; color: #3C3489; margin-bottom: 12px; }
+  .modal-box p, .modal-box li { font-size: 12.5px; color: #444441; line-height: 1.7; }
+  .modal-box code {
+    background: #f1efe8; padding: 1px 6px; border-radius: 4px;
+    font-size: 11.5px; color: #A32D2D; font-family: monospace;
+  }
+  .modal-box .code-block {
+    background: #f1efe8; padding: 12px 14px; border-radius: 8px;
+    font-size: 11.5px; font-family: monospace; color: #3C3489;
+    white-space: pre-wrap; line-height: 1.6; margin: 8px 0;
+  }
+  .modal-close {
+    margin-top: 14px; text-align: right;
+  }
+  .modal-close button {
+    background: #534AB7; color: #fff; border: none;
+    border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+
+  /* ---- Tabs ---- */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: #e8e6de;
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #5F5E5A;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+  }
+  .tab.active {
+    background: #fff;
+    color: #3C3489;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .tab:hover:not(.active) { background: #dddcd4; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ---- Schedule card ---- */
+  .schedule-card {
+    background: #fff;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .schedule-card .day-header {
+    background: #f1efe8;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #3C3489;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .schedule-card .day-header .day-tag {
+    font-size: 11px;
+    font-weight: 400;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: #EEEDFE;
+    color: #534AB7;
+  }
+  .schedule-card .day-header .day-tag.off { background: #E1F5EE; color: #0F6E56; }
+  .schedule-item {
+    display: flex;
+    padding: 8px 16px;
+    border-top: 0.5px solid #f1efe8;
+    transition: background 0.1s;
+  }
+  .schedule-item:hover { background: #FAFAF8; }
+  .schedule-item .time-col {
+    width: 70px;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #888780;
+    padding-top: 2px;
+  }
+  .schedule-item .action-col {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .schedule-item .action-col label {
+    flex: 1;
+    font-size: 12.5px;
+    color: #444441;
+    cursor: pointer;
+    user-select: none;
+  }
+  .schedule-item .action-col input[type="checkbox"] {
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    accent-color: #534AB7;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .schedule-item .action-col .note {
+    font-size: 11px;
+    color: #888780;
+    display: block;
+    margin-top: 1px;
+  }
+  .schedule-item.done label { text-decoration: line-through; color: #B4B2A9; }
+  .schedule-item.done .note { text-decoration: none; }
+
+  /* ---- Tracker ---- */
+  .tracker-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 550px) { .tracker-grid { grid-template-columns: 1fr; } }
+  .tracker-item {
+    background: #fff;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .tracker-item .t-label {
+    font-size: 11px;
+    color: #888780;
+    margin-bottom: 4px;
+  }
+  .tracker-item .t-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tracker-item input[type="text"],
+  .tracker-item input[type="number"] {
+    flex: 1;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    background: #fff;
+  }
+  .tracker-item input:focus { border-color: #534AB7; }
+  .tracker-item .t-unit { font-size: 11px; color: #888780; }
+  .tracker-item .t-range { font-size: 10px; color: #B4B2A9; margin-top: 3px; }
+  .btn-save {
+    background: #534AB7;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-save:hover { background: #3C3489; }
+  .btn-save:disabled { background: #B4B2A9; cursor: default; }
+
+  /* ---- Sleep Progress ---- */
+  .sleep-progress { padding: 10px 0; }
+  .sleep-week {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 0.5px solid #f1efe8;
+  }
+  .sleep-week:last-child { border-bottom: none; }
+  .sleep-week .wk-label {
+    width: 60px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #534AB7;
+    flex-shrink: 0;
+  }
+  .sleep-week .wk-bar-wrap {
+    flex: 1;
+    height: 20px;
+    position: relative;
+  }
+  .sleep-week .wk-bar-bg {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background: #f1efe8;
+    border-radius: 10px;
+  }
+  .sleep-week .wk-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 10px;
+    transition: width 0.3s;
+  }
+  .sleep-week .wk-label-right {
+    width: 70px;
+    text-align: right;
+    font-size: 11px;
+    color: #5F5E5A;
+    flex-shrink: 0;
+  }
+
+  /* ---- Reset button ---- */
+  .reset-area {
+    text-align: center;
+    margin: 16px 0;
+  }
+  .btn-reset {
+    background: transparent;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 11px;
+    color: #888780;
+    cursor: pointer;
+  }
+  .btn-reset:hover { border-color: #B4B2A9; color: #5F5E5A; }
+
+  .saved-msg {
+    display: inline-block;
+    font-size: 11px;
+    color: #3B6D11;
+    margin-left: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .saved-msg.show { opacity: 1; }
+
+  .day-tag { display: inline-block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>十七 · 健康执行日程表</h1>
+    <div class="sub">点选即记录 · 每天自动重置 · <a onclick="showEditGuide()">如何修改日程？</a> · <a onclick="showBackupGuide()">数据备份指南</a></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="daily" role="tab">每日执行</button>
+    <button class="tab" data-tab="schedule" role="tab">周日程</button>
+    <button class="tab" data-tab="tracker" role="tab">数据记录</button>
+    <button class="tab" data-tab="sleep" role="tab">作息进度</button>
+  </div>
+
+  <!-- ======== Tab 1: Daily Checklist ======== -->
+  <div class="tab-content active" id="tab-daily">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <span id="date-display" style="font-weight:600;font-size:14px;color:#3C3489;"></span>
+        <span style="font-size:11px;color:#888780;margin-left:6px;">每天自动重置</span>
+      </div>
+      <span id="progress-text" style="font-size:12px;color:#5F5E5A;"></span>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="height:4px;background:#f1efe8;border-radius:2px;margin-bottom:14px;">
+      <div id="progress-bar" style="width:0%;height:100%;background:#534AB7;border-radius:2px;transition:width 0.3s;"></div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="day-header">
+        起床 &amp; 早晨 (7:00-8:00)
+        <span class="day-tag" id="morning-count">0/5</span>
+      </div>
+      <div class="schedule-item" data-id="wake">
+        <div class="time-col">7:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>起床拉开窗帘/开灯 · 喝温水300ml</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="stretch">
+        <div class="time-col">7:10</div>
+        <div class="action-col">
+          <input type="checkbox"><label>体态矫正训练 15min</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="breakfast">
+        <div class="time-col">7:35</div>
+        <div class="action-col">
+          <input type="checkbox"><label>高蛋白早餐<span class="note">鸡蛋+全麦+无糖豆浆/牛奶</span></label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="weigh">
+        <div class="time-col">7:45</div>
+        <div class="action-col">
+          <input type="checkbox"><label>晨起空腹称重（每周二）<span class="note">固定同一秤</span></label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="prep">
+        <div class="time-col">7:50</div>
+        <div class="action-col">
+          <input type="checkbox"><label>备好午餐/加餐 · 装满水杯出门</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="day-header">
+        工作 &amp; 午间 (9:00-14:00)
+        <span class="day-tag" id="mid-count">0/4</span>
+      </div>
+      <div class="schedule-item" data-id="water-am">
+        <div class="time-col">9-12点</div>
+        <div class="action-col">
+          <input type="checkbox"><label>上午饮水≥700ml<span class="note">桌面放水杯提醒</span></label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="stand-am">
+        <div class="time-col">每小时</div>
+        <div class="action-col">
+          <input type="checkbox"><label>每小时起身1-2min / 看远30秒</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="lunch">
+        <div class="time-col">12:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>午餐：米饭1拳+肉1掌+蔬菜2拳<span class="note">少油少盐</span></label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="walk">
+        <div class="time-col">12:40</div>
+        <div class="action-col">
+          <input type="checkbox"><label>午餐后散步10-15min</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="nap">
+        <div class="time-col">13:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>午休/闭眼休息 15-20min（不超过30min）</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="day-header">
+        下午 &amp; 下班 (14:00-21:00)
+        <span class="day-tag" id="pm-count">0/5</span>
+      </div>
+      <div class="schedule-item" data-id="snack">
+        <div class="time-col">16:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>加餐：坚果一小把/无糖酸奶</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="water-pm">
+        <div class="time-col">14-18点</div>
+        <div class="action-col">
+          <input type="checkbox"><label>下午饮水≥700ml</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="stand-pm">
+        <div class="time-col">每小时</div>
+        <div class="action-col">
+          <input type="checkbox"><label>每小时起身1-2min</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="exercise">
+        <div class="time-col">下班后</div>
+        <div class="action-col">
+          <input type="checkbox"><label>有氧运动 20-30min（每周3-4次）<span class="note">爬楼梯/跳绳/快走</span></label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="dinner">
+        <div class="time-col">20:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>轻晚餐：粗粮半拳+鸡胸/豆腐+大量蔬菜</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="day-header">
+        晚间缓冲带 (21:00-23:30)
+        <span class="day-tag" id="night-count">0/6</span>
+      </div>
+      <div class="schedule-item" data-id="unwind">
+        <div class="time-col">21:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>"准备收工"闹钟 · 不碰工作设备</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="footbath">
+        <div class="time-col">21:15</div>
+        <div class="action-col">
+          <input type="checkbox"><label>泡脚15min</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="noscreen">
+        <div class="time-col">22:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>手机放客厅 · 开启暖光台灯</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="stoplist">
+        <div class="time-col">22:10</div>
+        <div class="action-col">
+          <input type="checkbox"><label>写"今日停止"清单 + 明天3件要事</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="night-stretch">
+        <div class="time-col">22:30</div>
+        <div class="action-col">
+          <input type="checkbox"><label>晚间体态训练（如早上没做）/ 深呼吸</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="sleep">
+        <div class="time-col">23:00</div>
+        <div class="action-col">
+          <input type="checkbox"><label>关灯入睡 · 目标23:30前睡着</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="day-header">
+        每日红线
+        <span class="day-tag" id="redline-count">0/3</span>
+      </div>
+      <div class="schedule-item" data-id="red-caffeine">
+        <div class="time-col">全天</div>
+        <div class="action-col">
+          <input type="checkbox"><label>午后13:00后无咖啡因摄入</label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="red-sugar">
+        <div class="time-col">全天</div>
+        <div class="action-col">
+          <input type="checkbox"><label>无含糖饮料/果汁<span class="note">喝水、淡茶、黑咖啡算OK</span></label>
+        </div>
+      </div>
+      <div class="schedule-item" data-id="red-alcohol">
+        <div class="time-col">全天</div>
+        <div class="action-col">
+          <input type="checkbox"><label>无酒精（尤其啤酒）</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="reset-area">
+      <button class="btn-reset" onclick="resetToday()">重置今日</button>
+    </div>
+
+  </div>
+
+  <!-- ======== Tab 2: Weekly Schedule ======== -->
+  <div class="tab-content" id="tab-schedule">
+    <style>
+      .ws-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+      .ws-col { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 8px; overflow: hidden; }
+      .ws-col-title { background: #f1efe8; text-align: center; padding: 6px 0; font-size: 11px; font-weight: 600; color: #3C3489; }
+      .ws-col-title.off { background: #E1F5EE; color: #0F6E56; }
+      .ws-item { padding: 4px 6px; font-size: 10.5px; border-top: 0.5px solid #f1efe8; color: #444441; line-height: 1.4; }
+      .ws-item .t { font-weight: 500; }
+      .ws-item.type1 { background: #F3F0FF; }
+      .ws-item.type2 { background: #E1F5EE; }
+      .ws-item.type3 { background: #FFF8F0; }
+      @media (max-width: 700px) {
+        .ws-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+    </style>
+
+    <p style="font-size:12px;color:#888780;margin-bottom:10px;">每周固定日程框架 · 具体执行以每日清单为准</p>
+
+    <div class="ws-grid">
+      <div class="ws-col">
+        <div class="ws-col-title">周一</div>
+        <div class="ws-item type1"><span class="t">07:00</span> 起床+拉伸</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 早餐</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item type1"><span class="t">下班后</span> 有氧30min</div>
+        <div class="ws-item"><span class="t">21:00</span> 缓冲带</div>
+        <div class="ws-item"><span class="t">23:00</span> 入睡</div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-col-title">周二</div>
+        <div class="ws-item type1"><span class="t">07:00</span> 起床+称重</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 早餐</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item type2"><span class="t">下班后</span> 体态15min</div>
+        <div class="ws-item"><span class="t">21:00</span> 缓冲带</div>
+        <div class="ws-item"><span class="t">23:00</span> 入睡</div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-col-title">周三</div>
+        <div class="ws-item type1"><span class="t">07:00</span> 起床+拉伸</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 早餐</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item type1"><span class="t">下班后</span> 有氧30min</div>
+        <div class="ws-item"><span class="t">21:00</span> 缓冲带</div>
+        <div class="ws-item"><span class="t">23:00</span> 入睡</div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-col-title">周四</div>
+        <div class="ws-item type1"><span class="t">07:00</span> 起床+拉伸</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 早餐</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item type2"><span class="t">下班后</span> 体态15min</div>
+        <div class="ws-item"><span class="t">21:00</span> 缓冲带</div>
+        <div class="ws-item"><span class="t">23:00</span> 入睡</div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-col-title">周五</div>
+        <div class="ws-item type1"><span class="t">07:00</span> 起床+拉伸</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 早餐</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item type1"><span class="t">下班后</span> 有氧30min</div>
+        <div class="ws-item"><span class="t">21:00</span> 缓冲带</div>
+        <div class="ws-item"><span class="t">23:00</span> 入睡</div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-col-title off">周六</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 起床+拉伸</div>
+        <div class="ws-item type1"><span class="t">08:00</span> 早餐</div>
+        <div class="ws-item type2"><span class="t">上午</span> HIIT 20min</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item"><span class="t">15:00</span> 午休20min</div>
+        <div class="ws-item type3"><span class="t">可选</span> 游泳/骑行</div>
+        <div class="ws-item"><span class="t">23:30</span> 入睡</div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-col-title off">周日</div>
+        <div class="ws-item type1"><span class="t">07:30</span> 起床+拉伸</div>
+        <div class="ws-item type1"><span class="t">08:00</span> 早餐</div>
+        <div class="ws-item type2"><span class="t">上午</span> 体态训练</div>
+        <div class="ws-item"><span class="t">12:00</span> 午餐+散步</div>
+        <div class="ws-item type3"><span class="t">下午</span> 本周复盘</div>
+        <div class="ws-item"><span class="t">23:30</span> 入睡</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:12px;font-size:11px;color:#888780;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#F3F0FF;"></span> 体态训练</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#E1F5EE;"></span> 有氧运动</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#FFF8F0;"></span> 灵活安排</span>
+    </div>
+  </div>
+
+  <!-- ======== Tab 3: Data Tracker ======== -->
+  <div class="tab-content" id="tab-tracker">
+
+    <p style="font-size:12px;color:#888780;margin-bottom:12px;">每日记录关键指标 · 数据会保存在浏览器中</p>
+
+    <div class="tracker-grid">
+      <div class="tracker-item">
+        <div class="t-label">入睡时间</div>
+        <div class="t-input-row">
+          <input type="text" id="t-sleep-time" placeholder="如 23:30" style="width:100px;flex:none;">
+          <span style="font-size:12px;color:#5F5E5A;">目标 ≤ 23:30</span>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">起床时间</div>
+        <div class="t-input-row">
+          <input type="text" id="t-wake-time" placeholder="如 7:00" style="width:100px;flex:none;">
+          <span style="font-size:12px;color:#5F5E5A;">目标 6:30-7:00</span>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">睡眠时长</div>
+        <div class="t-input-row">
+          <input type="number" id="t-sleep-h" min="0" max="12" step="0.5" placeholder="7" style="width:60px;flex:none;">
+          <span class="t-unit">小时</span>
+          <span style="font-size:12px;color:#5F5E5A;">目标 ≥ 7h</span>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">饮水</div>
+        <div class="t-input-row">
+          <input type="number" id="t-water" min="0" max="5000" step="100" placeholder="2000" style="width:70px;flex:none;">
+          <span class="t-unit">ml</span>
+          <span style="font-size:12px;color:#5F5E5A;">目标 ≥ 2000ml</span>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">步数</div>
+        <div class="t-input-row">
+          <input type="number" id="t-steps" min="0" max="50000" placeholder="8000" style="width:80px;flex:none;">
+          <span class="t-unit">步</span>
+          <span style="font-size:12px;color:#5F5E5A;">目标 ≥ 7000</span>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">体重（每周二记录）</div>
+        <div class="t-input-row">
+          <input type="number" id="t-weight" min="50" max="100" step="0.1" placeholder="70.5" style="width:70px;flex:none;">
+          <span class="t-unit">kg</span>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">今日头痛</div>
+        <div class="t-input-row">
+          <select id="t-headache" style="flex:1;border:0.5px solid #d3d1c7;border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+            <option value="无">无</option>
+            <option value="轻度（不影响工作）">轻度</option>
+            <option value="中度（需要休息）">中度</option>
+            <option value="重度">重度</option>
+          </select>
+        </div>
+      </div>
+      <div class="tracker-item">
+        <div class="t-label">体态矫正</div>
+        <div class="t-input-row">
+          <select id="t-posture" style="flex:1;border:0.5px solid #d3d1c7;border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;outline:none;background:#fff;">
+            <option value="未做">未做</option>
+            <option value="做了部分">部分完成</option>
+            <option value="全套完成">全套完成</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn-save" onclick="saveTracker()">保存今日数据</button>
+      <span id="tracker-saved" class="saved-msg">已保存</span>
+    </div>
+
+    <!-- History -->
+    <div style="margin-top:16px;">
+      <h3 style="font-size:13px;font-weight:500;color:#534AB7;margin-bottom:8px;">本周记录</h3>
+      <div id="history-list" style="font-size:11px;color:#888780;"></div>
+    </div>
+  </div>
+
+  <!-- ======== Tab 4: Sleep Progress ======== -->
+  <div class="tab-content" id="tab-sleep">
+    <div class="schedule-card" style="padding:16px;">
+      <h3 style="font-size:14px;font-weight:600;color:#3C3489;margin-bottom:4px;">8周渐进式作息调整</h3>
+      <p style="font-size:11px;color:#888780;margin-bottom:12px;">每个阶段只提前30min，每周聚焦1-2个策略</p>
+
+      <div class="sleep-progress">
+        <div class="sleep-week">
+          <span class="wk-label">第1周</span>
+          <div class="wk-bar-wrap">
+            <div class="wk-bar-bg"></div>
+            <div class="wk-bar-fill" style="width:14%;background:#A32D2D;"></div>
+          </div>
+          <span class="wk-label-right">2:00→1:30</span>
+        </div>
+        <div class="sleep-week">
+          <span class="wk-label">第2周</span>
+          <div class="wk-bar-wrap">
+            <div class="wk-bar-bg"></div>
+            <div class="wk-bar-fill" style="width:29%;background:#D85A30;"></div>
+          </div>
+          <span class="wk-label-right">1:30→1:00</span>
+        </div>
+        <div class="sleep-week">
+          <span class="wk-label">第3-4周</span>
+          <div class="wk-bar-wrap">
+            <div class="wk-bar-bg"></div>
+            <div class="wk-bar-fill" style="width:43%;background:#EF9F27;"></div>
+          </div>
+          <span class="wk-label-right">1:00→0:30</span>
+        </div>
+        <div class="sleep-week">
+          <span class="wk-label">第5-6周</span>
+          <div class="wk-bar-wrap">
+            <div class="wk-bar-bg"></div>
+            <div class="wk-bar-fill" style="width:57%;background:#AFA9EC;"></div>
+          </div>
+          <span class="wk-label-right">0:30→0:00</span>
+        </div>
+        <div class="sleep-week">
+          <span class="wk-label">第7-8周</span>
+          <div class="wk-bar-wrap">
+            <div class="wk-bar-bg"></div>
+            <div class="wk-bar-fill" style="width:71%;background:#5DCAA5;"></div>
+          </div>
+          <span class="wk-label-right">0:00→23:30</span>
+        </div>
+        <div class="sleep-week">
+          <span class="wk-label">达标</span>
+          <div class="wk-bar-wrap">
+            <div class="wk-bar-bg"></div>
+            <div class="wk-bar-fill" style="width:86%;background:#3B6D11;"></div>
+          </div>
+          <span class="wk-label-right">23:30前入睡</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-card" style="padding:16px;">
+      <h3 style="font-size:14px;font-weight:600;color:#3C3489;margin-bottom:8px;">每周核心策略</h3>
+      <table style="width:100%;font-size:11.5px;border-collapse:collapse;">
+        <tr style="background:#f1efe8;"><th style="padding:6px 8px;text-align:left;font-weight:500;">周次</th><th style="padding:6px 8px;text-align:left;font-weight:500;">入睡目标</th><th style="padding:6px 8px;text-align:left;font-weight:500;">专注策略</th></tr>
+        <tr><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">第1周</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">1:30前</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">21:00闹钟提醒+睡前1h禁屏+泡脚</td></tr>
+        <tr><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">第2周</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">1:00前</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">通勤切换状态+写"今日停止"清单</td></tr>
+        <tr><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">第3-4周</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">0:30前</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">睡前仪式（拉伸+阅读）+固定7:00闹钟</td></tr>
+        <tr><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">第5-6周</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">0:00前</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">周末8:00起+午休20min+晚餐后散步</td></tr>
+        <tr><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">第7-8周</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">23:30前</td><td style="padding:5px 8px;border-bottom:0.5px solid #f1efe8;">睡前1h断网+早起运动建立正反馈</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== Backups section ======== -->
+  <div style="background:#fff;border:0.5px solid #d3d1c7;border-radius:10px;padding:18px 20px;margin-top:8px;">
+    <h3 style="font-size:13px;font-weight:600;color:#3C3489;margin-bottom:8px;">数据备份 / 迁移</h3>
+    <p style="font-size:11px;color:#888780;margin-bottom:10px;">浏览器数据可能因清除缓存丢失，建议每周备份一次</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-save" onclick="exportAllData()">导出全部数据</button>
+      <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+        <span style="background:transparent;border:0.5px solid #d3d1c7;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:500;color:#5F5E5A;display:inline-block;">导入备份</span>
+        <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+      </label>
+      <span id="backup-msg" class="saved-msg" style="line-height:34px;">已备份</span>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:11px;color:#888780;padding:12px 0 4px;">
+    数据保存在浏览器本地 · 建议每周导出备份一次
+  </div>
+</div>
+
+<!-- ===== Edit Guide Modal ===== -->
+<div class="modal-overlay" id="edit-guide-modal" onclick="if(event.target===this)closeEditGuide()">
+  <div class="modal-box">
+    <h2>如何修改日程内容</h2>
+    <p><strong>方法一：让我帮你改（推荐）</strong></p>
+    <p>直接跟我说要增删改什么条目就行，我来更新HTML文件。例如：</p>
+    <ul>
+      <li>"把午休去掉，改成冥想10分钟"</li>
+      <li>"增加一个晚间拉伸的条目"</li>
+      <li>"把红线里的无酒精改成不喝啤酒就好"</li>
+    </ul>
+
+    <p style="margin-top:12px;"><strong>方法二：自己用记事本改</strong></p>
+    <p>用任何文本编辑器（记事本/VSCode）打开 HTML 文件，找到对应条目修改：</p>
+    <div class="code-block">&lt;div class="schedule-item" data-id="xxx"&gt;
+  &lt;div class="time-col"&gt;7:00&lt;/div&gt;
+  &lt;div class="action-col"&gt;
+    &lt;input type="checkbox"&gt;
+    &lt;label&gt;你要改的文字&lt;/label&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</div>
+
+    <p><strong>如果增删条目，还需同步修改计数：</strong></p>
+    <p>在页面底部 &lt;script&gt; 中找到 <code>updateCounts()</code> 函数里的 <code>sections</code> 对象，把新条目的 data-id 加进去。例如 morning-count 对应的数组：</p>
+    <div class="code-block">'morning-count': ['wake','stretch','breakfast','weigh','prep']</div>
+    <p>加条目就在数组里加一个id，删条目就移除对应的id。</p>
+
+    <p style="margin-top:12px;"><strong>方法三：改用飞书/腾讯文档</strong></p>
+    <p>如果你有飞书或腾讯文档，我可以把这份日程表生成对应的在线表格，方便多人查看和长期保存。</p>
+
+    <div class="modal-close"><button onclick="closeEditGuide()">知道了</button></div>
+  </div>
+</div>
+
+<!-- ===== Backup Guide Modal ===== -->
+<div class="modal-overlay" id="backup-guide-modal" onclick="if(event.target===this)closeBackupGuide()">
+  <div class="modal-box">
+    <h2>长期数据保存方案</h2>
+
+    <p><strong>方案A：每周导出备份（最稳妥）</strong></p>
+    <p>点击页面底部的<strong>"导出全部数据"</strong>按钮，会下载一个JSON文件。<br>
+    把这个文件存到微信收藏、微云、邮箱附件、或任何云盘里。<br>
+    换电脑或重装后，点击<strong>"导入备份"</strong>恢复，所有打卡记录都在。</p>
+
+    <p style="margin-top:12px;"><strong>方案B：用飞书/腾讯文档同步（推荐）</strong></p>
+    <p>如果你有飞书或腾讯文档，可以：</p>
+    <ol>
+      <li>我把表格设计成在线文档格式</li>
+      <li>每天在在线文档里勾选/填写</li>
+      <li>数据自动保存在云端，永不丢失</li>
+      <li>手机电脑都能打开</li>
+    </ol>
+
+    <p style="margin-top:12px;"><strong>方案C：发到邮箱备份</strong></p>
+    <p>每次导出JSON后，可以直接发到你自己的QQ邮箱存起来，需要的时候去邮箱下载再导入就行。</p>
+
+    <div class="modal-close"><button onclick="closeBackupGuide()">知道了</button></div>
+  </div>
+</div>
+
+<script>
+// ===== Tab switching =====
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ===== Date display =====
+const now = new Date();
+const days = ['日','一','二','三','四','五','六'];
+document.getElementById('date-display').textContent =
+  now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 周' + days[now.getDay()];
+
+// ===== Daily Checklist =====
+const STORAGE_KEY = 'health_checklist_' + now.toDateString();
+
+function loadChecklist() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.schedule-item input[type="checkbox"]').forEach(cb => {
+    const key = cb.closest('.schedule-item').dataset.id;
+    cb.checked = saved[key] || false;
+    cb.closest('.schedule-item').classList.toggle('done', cb.checked);
+  });
+  updateCounts();
+}
+
+function saveChecklist() {
+  const data = {};
+  document.querySelectorAll('.schedule-item input[type="checkbox"]').forEach(cb => {
+    data[cb.closest('.schedule-item').dataset.id] = cb.checked;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+document.querySelectorAll('.schedule-item input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    cb.closest('.schedule-item').classList.toggle('done', cb.checked);
+    saveChecklist();
+    updateCounts();
+  });
+});
+
+function updateCounts() {
+  const sections = {
+    'morning-count': ['wake','stretch','breakfast','weigh','prep'],
+    'mid-count': ['water-am','stand-am','lunch','walk','nap'],
+    'pm-count': ['snack','water-pm','stand-pm','exercise','dinner'],
+    'night-count': ['unwind','footbath','noscreen','stoplist','night-stretch','sleep'],
+    'redline-count': ['red-caffeine','red-sugar','red-alcohol']
+  };
+  let total = 0, done = 0;
+  document.querySelectorAll('.schedule-item input[type="checkbox"]').forEach(cb => {
+    total++;
+    if (cb.checked) done++;
+  });
+  for (const [elId, ids] of Object.entries(sections)) {
+    const checked = ids.filter(id => document.querySelector(`.schedule-item[data-id="${id}"] input`).checked).length;
+    document.getElementById(elId).textContent = checked + '/' + ids.length;
+  }
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = done + '/' + total + ' (' + pct + '%)';
+}
+
+function resetToday() {
+  if (!confirm('重置今日所有勾选？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  loadChecklist();
+}
+
+loadChecklist();
+
+// ===== Tracker =====
+const TRACKER_KEY = 'health_tracker_' + now.toISOString().slice(0,10);
+
+function loadTracker() {
+  const saved = JSON.parse(localStorage.getItem(TRACKER_KEY) || '{}');
+  document.getElementById('t-sleep-time').value = saved.sleepTime || '';
+  document.getElementById('t-wake-time').value = saved.wakeTime || '';
+  document.getElementById('t-sleep-h').value = saved.sleepH || '';
+  document.getElementById('t-water').value = saved.water || '';
+  document.getElementById('t-steps').value = saved.steps || '';
+  document.getElementById('t-weight').value = saved.weight || '';
+  document.getElementById('t-headache').value = saved.headache || '无';
+  document.getElementById('t-posture').value = saved.posture || '未做';
+}
+
+function saveTracker() {
+  const data = {
+    sleepTime: document.getElementById('t-sleep-time').value.trim(),
+    wakeTime: document.getElementById('t-wake-time').value.trim(),
+    sleepH: document.getElementById('t-sleep-h').value,
+    water: document.getElementById('t-water').value,
+    steps: document.getElementById('t-steps').value,
+    weight: document.getElementById('t-weight').value,
+    headache: document.getElementById('t-headache').value,
+    posture: document.getElementById('t-posture').value
+  };
+  localStorage.setItem(TRACKER_KEY, JSON.stringify(data));
+
+  // Also save to history
+  const history = JSON.parse(localStorage.getItem('health_tracker_history') || '[]');
+  const idx = history.findIndex(h => h.date === now.toISOString().slice(0,10));
+  const entry = { date: now.toISOString().slice(0,10), ...data };
+  if (idx >= 0) history[idx] = entry;
+  else history.push(entry);
+  // Keep last 30 days
+  while (history.length > 30) history.shift();
+  localStorage.setItem('health_tracker_history', JSON.stringify(history));
+
+  const msg = document.getElementById('tracker-saved');
+  msg.textContent = '已保存 ' + new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+  loadHistory();
+}
+
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem('health_tracker_history') || '[]');
+  const container = document.getElementById('history-list');
+  // Show last 7 days
+  const recent = history.slice(-7).reverse();
+  if (recent.length === 0) {
+    container.innerHTML = '暂无记录，今天开始记录吧';
+    return;
+  }
+  container.innerHTML = recent.map(h => {
+    const dateStr = h.date ? h.date.slice(5) : '--';
+    const sleepStr = h.sleepTime ? h.sleepTime + '-' + h.wakeTime : '--';
+    const waterStr = h.water ? h.water + 'ml' : '--';
+    return `<div style="display:flex;gap:10px;padding:4px 0;border-bottom:0.5px solid #f1efe8;">
+      <span style="width:40px;color:#534AB7;font-weight:500;">${dateStr}</span>
+      <span style="width:85px;color:#5F5E5A;">${sleepStr}</span>
+      <span style="width:60px;color:#5F5E5A;">${waterStr}</span>
+      <span style="flex:1;color:#888780;">${h.headache || ''}${h.posture && h.posture !== '未做' ? ' | ' + h.posture : ''}</span>
+    </div>`;
+  }).join('');
+}
+
+loadTracker();
+loadHistory();
+
+// ===== Auto-reset at midnight check =====
+(function checkDate() {
+  const lastDate = localStorage.getItem('health_last_date');
+  const today = now.toDateString();
+  if (lastDate && lastDate !== today) {
+    // New day - the checklist will naturally load fresh because STORAGE_KEY uses today's date
+  }
+  localStorage.setItem('health_last_date', today);
+})();
+
+// ===== Export / Import =====
+function exportAllData() {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('health_') || k === 'health_last_date');
+  const data = {};
+  keys.forEach(k => {
+    try { data[k] = JSON.parse(localStorage.getItem(k)); }
+    catch(e) { data[k] = localStorage.getItem(k); }
+  });
+  data._exportedAt = new Date().toISOString();
+  data._version = '1.0';
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '十七健康数据_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  const msg = document.getElementById('backup-msg');
+  msg.textContent = '已导出 ' + new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 3000);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      let count = 0;
+      for (const [key, value] of Object.entries(data)) {
+        if (key === '_exportedAt' || key === '_version') continue;
+        if (typeof value === 'object') {
+          localStorage.setItem(key, JSON.stringify(value));
+        } else {
+          localStorage.setItem(key, value);
+        }
+        count++;
+      }
+      // Reload current view
+      loadChecklist();
+      loadTracker();
+      loadHistory();
+
+      const msg = document.getElementById('backup-msg');
+      msg.classList.add('show');
+      msg.textContent = '\u2714 已恢复 ' + count + ' 条数据，页面已刷新';
+      setTimeout(() => msg.classList.remove('show'), 4000);
+    } catch(err) {
+      alert('导入失败：文件格式不正确');
+    }
+  };
+  reader.readAsText(file);
+  // Reset file input so same file can be re-imported
+  event.target.value = '';
+}
+
+// ===== Guide Modals =====
+function showEditGuide() {
+  document.getElementById('edit-guide-modal').classList.add('show');
+}
+function closeEditGuide() {
+  document.getElementById('edit-guide-modal').classList.remove('show');
+}
+function showBackupGuide() {
+  document.getElementById('backup-guide-modal').classList.add('show');
+}
+function closeBackupGuide() {
+  document.getElementById('backup-guide-modal').classList.remove('show');
+}
+</script>
+</body>
+</html>
