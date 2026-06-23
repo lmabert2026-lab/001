@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>十七 · 微习惯</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #f5f5f0; color: #2c2c2a; padding: 12px; font-size: 13px;
+  }
+  .container { max-width: 600px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #0F6E56, #1D9E75);
+    color: #fff; padding: 24px 28px; border-radius: 12px; margin-bottom: 16px;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header .sub { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+  .header .phase-badge {
+    display: inline-block; margin-top: 8px;
+    background: rgba(255,255,255,0.15); border-radius: 20px;
+    padding: 3px 14px; font-size: 11px;
+  }
+  .phase-bar {
+    display: flex; gap: 4px; margin-bottom: 16px;
+    background: #e8e6de; border-radius: 10px; padding: 3px;
+  }
+  .phase-btn {
+    flex: 1; text-align: center; padding: 8px 0; border-radius: 8px;
+    font-size: 11px; font-weight: 500; cursor: pointer; color: #5F5E5A;
+    border: none; background: transparent; transition: all 0.15s;
+  }
+  .phase-btn.active { background: #fff; color: #0F6E56; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .phase-btn.done { color: #3B6D11; }
+  .phase-btn.locked { opacity: 0.35; cursor: default; }
+  .habit-item {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; border: 0.5px solid #d3d1c7;
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 6px;
+    transition: all 0.15s; cursor: pointer;
+  }
+  .habit-item:active { transform: scale(0.98); }
+  .habit-item .check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid #d3d1c7; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #fff; transition: all 0.2s;
+  }
+  .habit-item.done .check { background: #1D9E75; border-color: #1D9E75; }
+  .habit-item .info { flex: 1; }
+  .habit-item .title { font-size: 14px; font-weight: 500; color: #2c2c2a; }
+  .habit-item .desc { font-size: 11px; color: #888780; margin-top: 1px; }
+  .habit-item.done .title { text-decoration: line-through; color: #B4B2A9; }
+  .phase-intro {
+    background: #E1F5EE; border: 0.5px solid #5DCAA5;
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .phase-intro h3 { font-size: 13px; font-weight: 600; color: #0F6E56; margin-bottom: 4px; }
+  .phase-intro p { font-size: 11.5px; color: #444441; line-height: 1.6; }
+  .focus-card {
+    background: #fff; border: 0.5px solid #d3d1c7;
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .focus-card h3 { font-size: 13px; font-weight: 600; color: #3C3489; margin-bottom: 6px; }
+  .focus-card .tip { font-size: 12px; color: #5F5E5A; line-height: 1.6; }
+  .streak-row {
+    display: flex; gap: 10px; margin-bottom: 14px;
+  }
+  .streak-box {
+    flex: 1; background: #fff; border: 0.5px solid #d3d1c7;
+    border-radius: 10px; padding: 12px 14px; text-align: center;
+  }
+  .streak-box .num { font-size: 26px; font-weight: 700; color: #0F6E56; }
+  .streak-box .label { font-size: 10px; color: #888780; margin-top: 2px; }
+  .day-row {
+    display: flex; gap: 4px; margin-bottom: 14px; justify-content: center;
+  }
+  .day-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; background: #f1efe8; color: #888780;
+    border: 0.5px solid #d3d1c7;
+  }
+  .day-dot.today { background: #0F6E56; color: #fff; border-color: #0F6E56; }
+  .day-dot.done { background: #C0DD97; color: #3B6D11; border-color: #97C459; }
+  .mini-data {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+  }
+  .mini-data .item {
+    background: #fff; border: 0.5px solid #d3d1c7;
+    border-radius: 8px; padding: 10px 12px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+  .mini-data .item .l { font-size: 11px; color: #888780; }
+  .mini-data .item input {
+    width: 60px; text-align: right; border: none; font-size: 14px;
+    font-weight: 600; color: #3C3489; font-family: inherit; outline: none;
+    background: transparent;
+  }
+  .save-btn {
+    display: block; width: 100%; background: #0F6E56; color: #fff;
+    border: none; border-radius: 10px; padding: 12px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: background 0.15s;
+  }
+  .save-btn:hover { background: #085041; }
+  .footer-note { text-align: center; font-size: 10px; color: #B4B2A9; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🌱 十七 · 微习惯</h1>
+    <div class="sub">从最小的改变开始 · 轻松坚持</div>
+    <span class="phase-badge" id="header-phase">第1阶段 · 打基础</span>
+  </div>
+
+  <div class="phase-bar" id="phase-bar"></div>
+  <div id="phase-content"></div>
+
+  <div style="font-size:11px;color:#888780;margin-bottom:6px;">本周打卡</div>
+  <div class="day-row" id="week-dots"></div>
+
+  <div class="streak-row">
+    <div class="streak-box"><div class="num" id="streak-current">0</div><div class="label">当前连续</div></div>
+    <div class="streak-box"><div class="num" id="streak-best">0</div><div class="label">最长记录</div></div>
+    <div class="streak-box"><div class="num" id="phase-days">0/5</div><div class="label">阶段进度</div></div>
+  </div>
+
+  <div class="mini-data">
+    <div class="item"><span class="l">体重</span><input type="text" id="m-weight" placeholder="--"></div>
+    <div class="item"><span class="l">入睡</span><input type="text" id="m-sleep" placeholder="--"></div>
+    <div class="item"><span class="l">饮水</span><input type="text" id="m-water" placeholder="--"></div>
+    <div class="item"><span class="l">运动</span><input type="text" id="m-exercise" placeholder="--"></div>
+  </div>
+
+  <button class="save-btn" onclick="saveToday()">✓ 完成今日打卡</button>
+  <div class="footer-note">点选即完成 · 数据自动保存在浏览器 · 每阶段累计5天即可解锁下一阶段</div>
+</div>
+
+<script>
+const phases = {
+  1: { name: '打基础', desc: '目标是把入睡时间从凌晨2点提前到1点，同时每天喝够水。就这两件事，坚持5天。', tip: '💡 晚上手机设22:00闹钟提醒"该收工了"，看到闹钟就把手机放客厅去。', habits: [
+    { id: 's1', title: '1点前上床睡觉', desc: '比原来提前1小时，做到就算赢' },
+    { id: 'w1', title: '喝水 ≥ 1500ml', desc: '上午1瓶+下午1瓶+晚上1瓶（500ml/瓶）' },
+    { id: 'n1', title: '无含糖饮料', desc: '只喝水、茶、黑咖啡' }
+  ]},
+  2: { name: '加运动', desc: '保持阶段1的习惯，每天加一个5分钟的体态动作。不需要15分钟，5分钟就够了。', tip: '💡 坐在工位上就能做：收下巴、肩膀后沉、深呼吸10次。每天做3轮就是5分钟。', habits: [
+    { id: 's2', title: '1点前上床睡觉', desc: '习惯成自然' },
+    { id: 'w2', title: '喝水 ≥ 1500ml', desc: '保持' },
+    { id: 'n2', title: '无含糖饮料', desc: '保持' },
+    { id: 'st2', title: '体态微动作 5min', desc: '不追求质量，做了就行' }
+  ]},
+  3: { name: '控饮食', desc: '保持前两个阶段，加入最简单的饮食调整——晚餐主食减半。不是不吃，是吃一半。', tip: '💡 加班晚的话，晚餐把米饭/面条减半，菜正常吃。胃舒服了睡眠也会改善。', habits: [
+    { id: 's3', title: '1点前上床睡觉', desc: '继续巩固' },
+    { id: 'w3', title: '喝水 ≥ 1500ml', desc: '保持' },
+    { id: 'n3', title: '无含糖饮料', desc: '保持' },
+    { id: 'st3', title: '体态微动作 5min', desc: '保持' },
+    { id: 'd3', title: '晚餐主食减半', desc: '米饭/面条比平时少一半' }
+  ]},
+  4: { name: '提效率', desc: '最后阶段，加入每周2次有氧和午休。这时候基础已经打好了。', tip: '💡 周末选一天去爬个楼梯或快走20分钟就行。不需要去健身房。', habits: [
+    { id: 's4', title: '1点前上床睡觉', desc: '稳定' },
+    { id: 'w4', title: '喝水 ≥ 1500ml', desc: '保持' },
+    { id: 'n4', title: '无含糖饮料', desc: '保持' },
+    { id: 'st4', title: '体态微动作 5min', desc: '保持' },
+    { id: 'd4', title: '晚餐主食减半', desc: '保持' },
+    { id: 'c4', title: '有氧运动 20min', desc: '每周至少2次，周末做' },
+    { id: 'na4', title: '午休 15min', desc: '闭眼休息就算，不一定睡着' }
+  ]}
+};
+
+const today = new Date(), dateKey = today.toISOString().slice(0,10);
+const STORAGE_KEY = 'mh_' + dateKey, PROGRESS_KEY = 'mh_progress', TRACKER_KEY = 'mt_' + dateKey;
+let currentPhase = 1, habitState = {};
+
+function init() {
+  const prog = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+  let hp = 0;
+  for (let p = 1; p <= 4; p++) if (prog['p'+p]) hp = p;
+  currentPhase = Math.min(hp + 1, 4);
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  if (saved.habits && saved.p) currentPhase = saved.p;
+  habitState = saved.habits || {};
+  render(); renderWeek(); loadMini();
+}
+
+function render() {
+  const ph = phases[currentPhase], prog = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+  let bar = '';
+  for (let p = 1; p <= 4; p++) {
+    const a = p === currentPhase ? 'active' : (prog['p'+p] ? 'done' : 'locked');
+    bar += '<button class="phase-btn ' + a + '" onclick="swPhase('+p+')">' + (prog['p'+p]?'●':'○') + ' 阶段'+p+'</button>';
+  }
+  document.getElementById('phase-bar').innerHTML = bar;
+  document.getElementById('header-phase').textContent = '第'+currentPhase+'阶段 · '+ph.name;
+
+  let h = '<div class="phase-intro"><h3>'+currentPhase+'. '+ph.name+'</h3><p>'+ph.desc+'</p></div>';
+  h += '<div class="focus-card"><h3>🎯 本周专注</h3><div class="tip">'+ph.tip+'</div></div>';
+  ph.habits.forEach(item => {
+    const d = habitState[item.id] || false;
+    h += '<div class="habit-item'+(d?' done':'')+'" onclick="tog(\''+item.id+'\')">';
+    h += '<div class="check">'+(d?'✓':'')+'</div>';
+    h += '<div class="info"><div class="title">'+item.title+'</div><div class="desc">'+item.desc+'</div></div></div>';
+  });
+  const dn = ph.habits.filter(hh => habitState[hh.id]).length, tl = ph.habits.length;
+  if (dn === tl) h += '<div style="text-align:center;font-size:12px;color:#0F6E56;margin:10px 0;">🎉 今日全部完成！</div>';
+  else if (dn > 0) h += '<div style="text-align:center;font-size:12px;color:#854F0B;margin:10px 0;">已完成 '+dn+'/'+tl+'</div>';
+  document.getElementById('phase-content').innerHTML = h;
+  updateStreak();
+}
+
+function tog(id) { habitState[id] = !habitState[id]; saveHabits(); render(); }
+
+function saveHabits() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({date:dateKey,p:currentPhase,habits:habitState}));
+}
+
+function swPhase(p) {
+  const prog = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+  if (p > currentPhase && !prog['p'+(p-1)]) return;
+  if (p < currentPhase && !confirm('切换到之前的阶段？')) return;
+  currentPhase = p;
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  habitState = (saved.habits && saved.p === p) ? saved.habits : {};
+  render();
+}
+
+function updateStreak() {
+  const ph = phases[currentPhase];
+  const dn = ph.habits.filter(h => habitState[h.id]).length, tl = ph.habits.length;
+  const prog = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+
+  // Track this day
+  const tracked = JSON.parse(localStorage.getItem('mh_tracked') || '{}');
+  if (dn === tl && !tracked[dateKey]) {
+    tracked[dateKey] = currentPhase;
+    localStorage.setItem('mh_tracked', JSON.stringify(tracked));
+  }
+
+  // Check phase completion (5 unique days)
+  const phaseDays = Object.keys(tracked).filter(k => tracked[k] === currentPhase).length;
+  if (phaseDays >= 5 && !prog['p'+currentPhase]) {
+    prog['p'+currentPhase] = true;
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(prog));
+    if (currentPhase < 4) {
+      setTimeout(() => {
+        if (confirm('🎉 第'+currentPhase+'阶段目标达成！进入下一阶段？')) {
+          currentPhase++; habitState = {}; saveHabits(); render();
+        }
+      }, 300);
+    } else {
+      setTimeout(() => alert('🎉🎉🎉 全部阶段完成！你建立了健康的生活方式！'), 300);
+    }
+  }
+
+  // Current streak
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 60; i++) {
+    const k = d.toISOString().slice(0,10);
+    const s = JSON.parse(localStorage.getItem('mh_' + k) || '{}');
+    if (s.habits) {
+      const p = phases[s.p || 1];
+      if (p && p.habits.filter(h => s.habits[h.id]).length === p.habits.length) streak++;
+      else break;
+    } else break;
+    d.setDate(d.getDate() - 1);
+  }
+  let best = parseInt(localStorage.getItem('mh_best') || '0');
+  if (streak > best) { best = streak; localStorage.setItem('mh_best', String(best)); }
+  document.getElementById('streak-current').textContent = streak;
+  document.getElementById('streak-best').textContent = best;
+  document.getElementById('phase-days').textContent = Math.min(phaseDays,5) + '/5';
+}
+
+function renderWeek() {
+  const days = ['日','一','二','三','四','五','六'];
+  const td = today.getDay();
+  const m = new Date(today); m.setDate(today.getDate() - (td === 0 ? 6 : td - 1));
+  let h = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(m); d.setDate(m.getDate() + i);
+    const k = d.toISOString().slice(0,10);
+    const s = JSON.parse(localStorage.getItem('mh_' + k) || '{}');
+    const isT = k === dateKey;
+    let cls = 'day-dot';
+    if (isT) cls += ' today';
+    else if (s.habits) {
+      const p = phases[s.p || 1];
+      if (p && p.habits.filter(h => s.habits[h.id]).length === p.habits.length) cls += ' done';
+    }
+    h += '<div class="'+cls+'">'+days[i]+'</div>';
+  }
+  document.getElementById('week-dots').innerHTML = h;
+}
+
+function loadMini() {
+  const s = JSON.parse(localStorage.getItem(TRACKER_KEY) || '{}');
+  document.getElementById('m-weight').value = s.w || '';
+  document.getElementById('m-sleep').value = s.slp || '';
+  document.getElementById('m-water').value = s.wtr || '';
+  document.getElementById('m-exercise').value = s.ex || '';
+}
+
+function saveToday() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({date:dateKey,p:currentPhase,habits:habitState}));
+  localStorage.setItem(TRACKER_KEY, JSON.stringify({
+    w: document.getElementById('m-weight').value.trim(),
+    slp: document.getElementById('m-sleep').value.trim(),
+    wtr: document.getElementById('m-water').value.trim(),
+    ex: document.getElementById('m-exercise').value.trim()
+  }));
+  const btn = document.querySelector('.save-btn');
+  btn.textContent = '✓ 已保存！'; btn.style.background = '#3B6D11';
+  setTimeout(() => { btn.textContent = '✓ 完成今日打卡'; btn.style.background = '#0F6E56'; }, 1500);
+  renderWeek(); updateStreak(); render();
+}
+
+init();
+</script>
+</body>
+</html>
